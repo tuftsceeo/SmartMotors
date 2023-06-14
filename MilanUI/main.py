@@ -85,8 +85,7 @@ switched_select = False
 #mainloop flags
 clearscreen=False
 
-i2c = SoftI2C(scl = Pin(7), sda = Pin(6))
-display = icons.SSD1306_SMART(128, 64, i2c)
+
 
 
 
@@ -116,7 +115,8 @@ battery.atten(ADC.ATTN_11DB) # the pin expects a voltage range up to 3.3V
 
 # plot ranges from 4,4 to 78, 59 for the box not to overlap with the border
 
-
+i2c = SoftI2C(scl = Pin(7), sda = Pin(6))
+display = icons.SSD1306_SMART(128, 64, i2c, switch_up)
 
 
 #interrupt functions

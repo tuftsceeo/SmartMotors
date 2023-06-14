@@ -57,9 +57,6 @@ switched_select = False
 #mainloop flags
 clearscreen=False
 
-i2c = SoftI2C(scl = Pin(7), sda = Pin(6))
-display = icons.SSD1306_SMART(128, 64, i2c)
-
 
 
 #define buttons , sensors and motors
@@ -70,6 +67,10 @@ s = servo.Servo(Pin(2))
 switch_down = Pin(8, Pin.IN)
 switch_select = Pin(9, Pin.IN)
 switch_up= Pin(10, Pin.IN)
+
+i2c = SoftI2C(scl = Pin(7), sda = Pin(6))
+display = icons.SSD1306_SMART(128, 64, i2c,switch_up)
+
 
 #highlightedIcon=[(ICON,TotalIcons),...]
 #screenID gives the SCREEN number I am at
@@ -249,7 +250,7 @@ def resetflags():
 tim = Timer(0)
 tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
 batt = Timer(2)
-batt.init(period=500, mode=Timer.PERIODIC, callback=displaybatt)
+batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
 
 #setting up BLE irq
 
@@ -270,7 +271,7 @@ oldbattery=1
 
 while True:
     point = sens.readpoint()
-    broadcast(point, screenID, highlightedIcon[screenID][0],ID)
+    #broadcast(point, screenID, highlightedIcon[screenID][0],ID)
     
     #Homepage
     #[fb_Train,fb_Play,fb_Setting]
@@ -386,6 +387,8 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
+
+
 
 
 
