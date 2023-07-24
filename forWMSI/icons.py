@@ -21,7 +21,6 @@ def createIcons(iconSize, iconFrames, offsetx=0, offsety=0, direction=0):
         Icony=offsety# + i * (spacingV + iconSize) * ((direction)%2)
 
         icons.append([Iconx,Icony,iconFrames[i]])
-        print(icons)
     return icons
 
 
@@ -35,6 +34,12 @@ screenHeight=120
 
 #logo
 fb_SMLOGO = framebuf.FrameBuffer(bytearray(b'\x00\x00\x01\xe0\x00\x00\x00\x00\x00\xe1\xe1\xc0\x00\x00\x00\x00\xff\xff\xc0\x00\x00\x00\x00\xff\xff\xc0\x00\x00\x00\x11\xff\xff\xe2\x00\x00\x00\x7f\xff\xff\xff\x80\x00\x00\x7f\xff\xff\xff\x80\x00\x00?\xff\xff\xff\x00\x00\x00\x7f\xff\xff\xff\x80\x00\x06\xff\xf0\x03\xff\xd8\x00\x07\xff\xc0\x00\xff\xf8\x00\x0f\xff\x00\x00?\xfc\x00\x07\xfe\x00\x00\x1f\xf8\x00\x07\xfc\x00\x00\x0f\xf8\x00\x07\xf8\x00\x00\x07\xf8\x00\x0f\xf0\x00\x00\x03\xfc\x00\x7f\xe0\x00\x00\x01\xff\x80\x7f\xe0\x00\x00\x01\xff\x80\x7f\xc0\x00\x00\x00\xff\x80?\xc0\x00\x00\x00\xff\x00\x1f\xc0\x00\x00\x00\xfe\x00\x1f\x80\x00\x00\x00~\x00?\x80\x00\x00\x00\x7f\x00\xff\x80\x00\x079\xbf\xc0\xff\x80\x00\x07\xbd\xbf\xc0\xff\x80\x00\x079\xbf\xc0\xff\x80\x00\x00\x00\xff\xc0?\x80\x00\x00\x00\x7f\x00\x1f\xc0\x00\x00\x00\xfe\x00\x1f\xc0\x00\x00\x00\xfe\x00?\xc0\x00\x00\x00\xff\x00\x7f\xe0\x00\x00\x01\xff\x80\x7f\xe0\x00\x00\x01\xff\x80\x7f\xf0\x00\x00\x03\xff\x80\x0f\xf0\x00\x00\x03\xfc\x00\x07\xf8\x00\x00\x07\xf8\x00\x03\xfc\x00\x00\x0f\xf0\x00\x07\xff\x00\x00?\xf8\x00\x0f\xff\x80\x00\x7f\xfc\x00\x07\xff\xe0\x01\xff\xf8\x00\x06\x7f\xfe\x1f\xff\x98\x00\x00?\xff\xff\xff\x00\x00\x00?\xff\xff\xff\x00\x00\x00\x7f\xff\xff\xff\x80\x00\x00{\xff\xff\xf7\x80\x00\x00\x10\xff\xff\xc2\x00\x00\x00\x00\xff\xff\xc0\x00\x00\x00\x00\xf1\xe3\xc0\x00\x00\x00\x00\xe1\xe1\xc0\x00\x00\x00\x00\x01\xe0\x00\x00\x00'), 50, 50, framebuf.MONO_HLSB)
+#plug
+fb_battcharging = framebuf.FrameBuffer(bytearray(b'?\xff\xff\xc0 \x00\x00@ \x06\x00@\xe0\x07\x80@\xe0\x7f\xc0@\xe0<\x00@\xe0\x0c\x00@ \x00\x00@ \x00\x00@?\xff\xff\xc0'), 26, 10, framebuf.MONO_HLSB)
+fb_batthigh = framebuf.FrameBuffer(bytearray(b'?\xff\xff\xc0 \x00\x00@/\xef\xef@\xef\xef\xef@\xef\xef\xef@\xef\xef\xef@\xef\xef\xef@/\xef\xef@ \x00\x00@?\xff\xff\xc0'), 26, 10, framebuf.MONO_HLSB)
+fb_battmid = framebuf.FrameBuffer(bytearray(b'?\xff\xff\xc0 \x00\x00@ \x0f\xef@\xe0\x0f\xef@\xe0\x0f\xef@\xe0\x0f\xef@\xe0\x0f\xef@ \x0f\xef@ \x00\x00@?\xff\xff\xc0'), 26, 10, framebuf.MONO_HLSB)
+fb_battlow = framebuf.FrameBuffer(bytearray(b'?\xff\xff\xc0 \x00\x00@ \x00\x0f@\xe0\x00\x0f@\xe0\x00\x0f@\xe0\x00\x0f@\xe0\x00\x0f@ \x00\x0f@ \x00\x00@?\xff\xff\xc0'), 26, 10, framebuf.MONO_HLSB)
+
 
 #HomeScreen Icons
 fb_Train = framebuf.FrameBuffer(bytearray(b'\xff\xff\xff\xff\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\xff\xff\x01\x80\x80\x01\x01\x80\x80\x01\x01\x80\xe0\x01\x01\x81\xf0\x01\x01\x81\xf8\x01\x01\x83\xf8\x01\x01\x81\xf0\x01\x01\x81\xf0A\x01\x80\xe0\x81\x01\x81\xf1\x81\x01\x83\xfb\x01\x01\x83\xfe\x01\x01\x87\xfc\x01\x01\x87\xfc\x01\x01\x87\xff\xff\x01\x87\xfc\x00\x01\x87\xfc\x00\x01\x87\xfc\x00\x01\x83\xf8\x00\x01\x83\xf8\x00\x01\x81\xf0\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\xff\xff\xff\xff'), 32, 32, framebuf.MONO_HLSB)
@@ -68,10 +73,11 @@ fb_Lead = framebuf.FrameBuffer(bytearray(b'\xff\xff\xff\xff\x80\x00\x00\x01\x80\
 fb_Follow = framebuf.FrameBuffer(bytearray(b'\xff\xff\xff\xff\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x07\xe0\x01\x80\x0c0\x01\x80\x10\x08\x01\x80 \x04\x01\x80@\x02\x01\x80@\x02\x01\x80@\x02\x01\x80@\x02\x01\x80@\x02\x01\x80 \x04\x01\x80\x10\x0c\x01\x80\x0c<\x01\x80\x07\xee\x01\x80\x00\x07\x01\x80\x00\x03\x81\x80\x00\x01\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\x80\x00\x00\x01\xff\xff\xff\xff'), 32, 32, framebuf.MONO_HLSB)
 
 #Add the icons to the array, add iconsizes add the direction 0 - horizontal , 1 - vertical
-iconFrames=[[fb_Train,fb_Play,fb_Setting],[fb_add,fb_delete,fb_smallplay,fb_home],[fb_save,fb_pause,fb_home,fb_toggle],[fb_next,fb_delete,fb_home,fb_toggle],[fb_Lead,fb_Follow, fb_BIGHome]]
-iconSize=[32,25,25,25,32]
-offsets= [(5,20),(102,29),(102,29),(102,29),(5,20)] #where you want to display your first icon
-direction=[0,1,1,1,0]                # 0 horizonal and 1 vertical arrangement
+#iconFrames=[[fb_Train,fb_Play,fb_Setting],[fb_add,fb_delete,fb_smallplay,fb_home],[fb_save,fb_pause,fb_home,fb_toggle],[fb_next,fb_delete,fb_home,fb_toggle],[fb_Lead,fb_Follow, fb_BIGHome]]
+iconFrames=[[fb_Train,fb_Play],[fb_add,fb_delete,fb_smallplay,fb_home],[fb_save,fb_home],[fb_next,fb_delete,fb_home]]
+iconSize=[32,25,25,25]
+offsets= [(20,20),(102,29),(102,29),(102,29)] #where you want to display your first icon
+direction=[0,1,1,1]                # 0 horizonal and 1 vertical arrangement
 
 for index,icon in enumerate(iconFrames):
     icons = createIcons(iconSize[index], icon, offsetx=offsets[index][0], offsety=offsets[index][1] , direction=direction[index])
@@ -86,7 +92,24 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
         #Battery
 
         super().__init__(width, height, i2c, addr = 0x3C, external_vcc = external_vcc)
-
+        self.graphx=27
+        self.graphy=0
+        
+        self.iconx=0
+        self.icony=29
+        
+        
+        self.graphwidthx=100
+        self.graphwidthy=64
+        self.iconwidth=25
+        self.updownwidth=10
+        self.updownx=self.iconx+int(self.iconwidth/2-self.updownwidth/2)
+        self.upy=self.icony - self.updownwidth
+        self.downy=self.icony + self.iconwidth + 1
+            
+            
+        
+        
   
     def displayscreen(self,whereamI):
         for IconX,IconY,frame in Icons[whereamI]:
@@ -94,6 +117,7 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
         self.show()
 
     def selector(self,whereamI,icon,previcon):
+        print("icon and previcon and whereamI",icon,previcon, whereamI)
         if(whereamI==0 or whereamI == 4):
             padding=3
             width=height=iconSize[whereamI]+2*padding
@@ -101,26 +125,31 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
             self.rect(Icons[whereamI][icon][0]-padding,Icons[whereamI][icon][1]-padding,width,height, 1) #display current selector
             self.displayscreen(whereamI)
         else:
-            self.fill_rect(102,29,25,25, 0) #delete previous selector icon
-            #self.blit(fb_UP, 102, 0, 0)
-            self.blit(fb_upnobox,110,19,0)
-            self.blit(Icons[whereamI][icon][2], 102, 29, 0)
-            self.blit(fb_downnobox,110,56,0)
+           
+
+            self.fill_rect(self.iconx,self.icony,self.iconwidth,self.iconwidth, 0) #delete previous selector icon
+            self.blit(fb_upnobox,self.updownx,self.upy,0)
+            self.blit(Icons[whereamI][icon][2], self.iconx, self.icony, 0)
+            self.blit(fb_downnobox,self.updownx,self.downy,0)
             #self.blit(fb_DOWN, 102, 49, 0)
         self.show()
-        
+      
     
     def showbattery(self, batterylevel):
-        startx=112
-        starty=4
         length=20
         width=6
         gap=2
-        self.rect(startx-int(gap/2),starty-int(gap/2),length,width+gap,1)
-        batterylength=int((length)*(batterylevel-MIN_BATTERY)/(MAX_BATTERY-MIN_BATTERY))+1
-        self.fill_rect(startx,starty,length-batterylength,width,0)
-        self.fill_rect(startx-2*gap, starty+int(width/2)-gap,2*gap,2*gap,1)
-        self.fill_rect(startx+length-batterylength,starty,batterylength,width,1)
+        # if ( batterylevel>3000): #charging
+        if(batterylevel=="charging"): #charging
+            self.blit(fb_battcharging,self.iconx,0,0)
+        elif(batterylevel=="full"): #full charge
+            self.blit(fb_batthigh,self.iconx,0,0)
+        elif(batterylevel=="half"): #medium charge
+            self.blit(fb_battmid,self.iconx,0,0)
+        elif(batterylevel=="low"): # low charge
+            self.blit(fb_battlow,self.iconx,0,0)
+        else:
+            pass
         self.show()
         
 
@@ -133,26 +162,29 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
     def graph(self, oldpoint,point, points):
         rectsize=8
         dotsize=4
+        
+
         ox,oy=oldpoint
         x,y=point
-        ox=self.transform('light', 'screenx', ox)
-        oy=self.transform('motor','screeny',oy)
-        x=self.transform('light', 'screenx', x)
-        y=self.transform('motor','screeny',y)
+        ox=self.transform('light', 'screenx', ox)+self.graphx
+        oy=self.transform('motor','screeny',oy)+self.graphy
+        x=self.transform('light', 'screenx', x)+self.graphx
+        y=self.transform('motor','screeny',y)+self.graphy
         
         self.rect(ox-int(rectsize/2),oy-int(rectsize/2),rectsize,rectsize,0)
-        self.rect(0,0,100,64,1)
+        self.rect(self.graphx,self.graphy,self.graphwidthx,self.graphwidthy,1)
         self.rect(x-int(rectsize/2),y-int(rectsize/2),rectsize,rectsize,1)
         for i in points:
             x,y=i
-            x=self.transform('light', 'screenx', x)
-            y=self.transform('motor','screeny',y)
+            x=self.transform('light', 'screenx', x)+self.graphx
+            y=self.transform('motor','screeny',y)+self.graphy
             self.fill_rect(x-int(dotsize/2),y-int(dotsize/2),dotsize,dotsize,1)
         self.show()
     
     def cleargraph(self):
-        self.fill_rect(1,1,98,62,0)
-        self.rect(0,0,100,64,1)
+        self.fill_rect(self.graphx+1,self.graphy+1,self.graphwidthx-2,self.graphwidthy-2,0)
+        self.rect(self.graphx,self.graphy,self.graphwidthx,self.graphwidthy,1)
+
 
         
     def showmessage(self,msg):
@@ -187,5 +219,7 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
     def clear(self):
         self.fill(0)
         self.show()
+
+
 
 

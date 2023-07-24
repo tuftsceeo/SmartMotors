@@ -10,18 +10,18 @@ import os
 import sys
 import ubinascii
 import machine
-    
-import bleFunctions
-import bluetooth
 
 
 import sensors
 sens=sensors.SENSORS()
 
 #unique name
-ID= ubinascii.hexlify(machine.unique_id()).decode()
 
-highlightedIcon=[[0,3],[0,4],[0,4],[0,4],[0,3]] #[homescreen, trainscreen, playscreen, playthefilesscreen, settingsscreen]
+ID= ubinascii.hexlify(machine.unique_id()).decode()
+numberofIcons=[len(icons.iconFrames[i]) for i in range(len(icons.iconFrames))] #[homescreen, trainscreen, playscreen, playthefilesscreen, settingsscreen]
+highlightedIcon=[]
+for numberofIcon in numberofIcons:
+    highlightedIcon.append([0,numberofIcon])
 
 screenID=0
 lastPressed=0
@@ -29,11 +29,6 @@ previousIcon=0
 filenumber=0
 
 points = []
-
-
-
-
-
 
 
 #Defining all flags
@@ -99,6 +94,7 @@ def uppressed(count=1):
         displayselect(count)
 
 
+
 def displayselect(selectedIcon):
     global screenID
     global highlightedIcon
@@ -114,7 +110,7 @@ def displayselect(selectedIcon):
 def selectpressed():
     #declare all global variables, include all flags
     global flags
-    time.sleep(0.3)
+    time.sleep(0.1)
     flags[highlightedIcon[screenID][0]]=True
 
 
@@ -125,9 +121,11 @@ def resettohome():
     global previousIcon
     global clearscreen
     screenID=0
-    highlightedIcon=[[0,3],[0,4],[0,4],[0,4],[0,4]]
-    #display.fill(0) # clear screen
     previousIcon=0
+    for numberofIcon in numberofIcons:
+        highlightedIcon.append([0,numberofIcon])
+    display.selector(screenID,highlightedIcon[screenID][0],0)
+    #display.fill(0) # clear screen
     clearscreen=True
     
 def check_switch(p):
@@ -158,15 +156,15 @@ def check_switch(p):
         
         
     if switched_up:
-        if switch_state_up == 1:
+        if switch_state_up == 0:
             uppressed()
         switched_up = False
     elif switched_down:
-        if switch_state_down == 1:
+        if switch_state_down == 0:
             downpressed()
         switched_down = False
     elif switched_select:
-        if switch_state_select == 1:
+        if switch_state_select == 0:
             selectpressed()
         switched_select = False
     
@@ -180,22 +178,6 @@ def displaybatt(p):
     batterycharge=sens.readbattery()
     display.showbattery(batterycharge)
     return batterycharge
-    
-
-
-def mappot(value):
-    initial = [0, 4095]
-    final =  [0, 180]
-    return int((final[1]-final[0]) / (initial[1]-initial[0]) * (value - initial[0]) + final[0])
-
-
-def fakebattery(value):
-    initial = [0, 180]
-    final =  [2600, 2900]
-    return int((final[1]-final[0]) / (initial[1]-initial[0]) * (value - initial[0]) + final[0])
-
-
-
 
 
 
@@ -215,30 +197,6 @@ def nearestNeighbor(data, point):
             test = i
     return test
 
-
-
-
-
-def on_scan(addr_type, addr, name):
-    if addr_type is not None:
-        print("Found sensor:", addr_type, addr, name)
-        #central.connect()
-
-    else:
-        print("I don't know what this is")
-
-def on_rx():
-    print("rx: ", uart.read().decode().strip())
-            
-def broadcast(point, LEVEL0 , LEVEL1, displayMessage = "" ):
-    uart.write(str(point)+str(LEVEL0)+str(LEVEL1)+ str(displaybatt(1))+ displayMessage)
-    
-def closeconn():
-    uart.close()
-
-def waitforconnection():
-    print("waiting")
-
 def resetflags():
     global flags
     for i in range(len(flags)):
@@ -252,41 +210,42 @@ tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
 batt = Timer(2)
 batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
 
-#setting up BLE irq
 
 
 display.welcomemessage()
 
-#bluetooth functions
-
-ble = bluetooth.BLE()
-uart = bleFunctions.BLEUART(ble)
-#uart.scan(callback=on_scan)
-uart.irq(handler=on_rx)
-
 #setup with homescreen  #starts with screenID=0
 display.selector(screenID,highlightedIcon[screenID][0],-1)
 oldpoint=[-1,-1]
-oldbattery=1
+
 
 while True:
     point = sens.readpoint()
     #broadcast(point, screenID, highlightedIcon[screenID][0],ID)
     
     #Homepage
-    #[fb_Train,fb_Play,fb_Setting]
+    #[fb_Train,fb_Play]
+
+
     if(screenID==0):
         if(flags[0]):
             points=[] #empty the points arrray
             screenID=1
             clearscreen=True
+            display.graph(oldpoint, point, points)
             
         elif(flags[1]):
             screenID=3
             clearscreen=True
+            datapoints=readfile()
+            if (datapoints==[]):
+                display.showmessage("No data saved")
+                resettohome()
+            else:
+                display.graph(oldpoint, point, points)
             
-        elif(flags[2]):
-            screenID=4
+        #elif(flags[2]):
+        #    screenID=4
     
     # Training Screen
     # [fb_add,fb_delete,fb_smallplay,fb_home]
@@ -307,10 +266,11 @@ while True:
                 uppressed(count=4)
             else:
                 display.showmessage("No data to run")
+                resettohome()
  
         elif(flags[3]): #Home
            resettohome()
-        
+           
         if(not point==oldpoint): #only when point is different now
             s.write_angle(point[1])
             display.graph(oldpoint, point, points)
@@ -320,16 +280,13 @@ while True:
     elif(screenID==2):
         if(flags[0]):  # save function here
             savetofile(points)
-            uppressed(count=2)
+            uppressed(count=1)
            
-        elif(flags[1]): #pause
-            pass
-                
-        elif(flags[2]): # go home
+        elif(flags[1]): # go home
             resettohome()
         
-        elif(flags[3]):  #toggle the data
-            pass
+        #elif(flags[3]):  #toggle the data
+        #    pass
             
         if(not point==oldpoint): #only when point is different now
             point = nearestNeighbor(points,point)
@@ -341,8 +298,7 @@ while True:
     # Load saved files screen
     #[fb_next,fb_delete,fb_home,fb_toggle]
     elif(screenID==3):
-        datapoints=readfile()
-        
+        datapoints=readfile()        
         if(datapoints):
             numberofdata=len(datapoints)
             points=datapoints[filenumber]
@@ -366,6 +322,7 @@ while True:
                 s.write_angle(point[1])
                 display.graph(oldpoint, point, points)
         else:
+            display.showmessage("No files to show")
             resettohome()
                
     # Settings Screen
@@ -387,6 +344,7 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
+
 
 
 

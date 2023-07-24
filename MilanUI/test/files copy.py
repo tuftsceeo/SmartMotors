@@ -40,11 +40,10 @@ def readfile():
         if(data.points):
             return(data.points)
         else:
-            display.showmessage("No data saved")
             return([])
     else:
-        display.showmessage("No data saved")
         return([])
     
         #also make this go home
+
 
