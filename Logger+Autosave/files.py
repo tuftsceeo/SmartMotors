@@ -61,7 +61,19 @@ def resetlog():
     import os
     os.remove("log.py")
     
+def resetprefs():
+    f=open("prefs.py","w")
+    f.write("log=False\r\n")
+    f.close()
+    
 
+    
+def setprefs():
+    f=open("prefs.py","w")
+    f.write("log=True\r\n")
+    f.close()
+    
+    
 def savetolog(*logtext): # the points to save should have format of [[light, pot],[light,pot]]
     import os
     if(os.listdir().count('log.py')):
@@ -77,4 +89,5 @@ def savetolog(*logtext): # the points to save should have format of [[light, pot
     
     #writing files to the data.py  
     f.close()
+
 

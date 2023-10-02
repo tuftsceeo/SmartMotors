@@ -221,40 +221,8 @@ def resetflags():
     global flags
     for i in range(len(flags)):
         flags[i]=False
-    
-    
-datapoints=readfile()        
-if(datapoints):
-    numberofdata=len(datapoints)
-    points=datapoints[-1]    
-    
-#setting up Timers
-tim = Timer(0)
-tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
-batt = Timer(2)
-batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
-
-
-display.welcomemessage()
-
-
-if not switch_down.value() and not switch_up.value() and not switch_select.value():
-    resetlog()
-    LOGGING=True
-    print("resetting the log file")
-    
-if not switch_down.value() and not switch_up.value() and switch_select.value():
-    LOGGING=False
-    print("turn OFF the logging")
-
-if switch_down.value() and switch_up.value() and switch_select.value():
-    LOGGING=True
-    print("default: turn ON the logging")
-       
-#setup with homescreen  #starts with screenID=0
-display.selector(screenID,highlightedIcon[screenID][0],-1)
-oldpoint=[-1,-1]
-
+ 
+ 
 def shakemotor(point):
     motorpos=point[1]
     for i in range(2):
@@ -265,6 +233,60 @@ def shakemotor(point):
         
     print(motorpos)
     
+    
+
+def readdatapoints():
+    datapoints=readfile()        
+    if(datapoints):
+        numberofdata=len(datapoints)
+        return datapoints[-1]    
+    else:
+        return ([])
+    
+
+def setloggingmode():
+    #sets pref to log by default
+    if not switch_down.value() and not switch_up.value() and not switch_select.value():
+        resetlog()  #delete all the previous logs
+        setprefs()  #sets preference file to True 
+
+        print("resetting the log file")
+
+    #resets prefs to not log by default
+    if not switch_down.value() and not switch_up.value() and switch_select.value():
+        resetprefs()  #resets preference file to False
+        print("turn OFF the logging")
+
+
+    if switch_down.value() and switch_up.value() and switch_select.value():
+        print("default: turn ON the logging")
+        
+        
+    import prefs
+    return prefs.log
+
+
+
+points=readdatapoints()
+
+#setting up Timers
+tim = Timer(0)
+tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
+batt = Timer(2)
+batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
+
+
+display.welcomemessage()
+
+
+
+    
+    
+LOGGING=setloggingmode()
+       
+#setup with homescreen  #starts with screenID=0
+display.selector(screenID,highlightedIcon[screenID][0],-1)
+oldpoint=[-1,-1]
 
     
 while True:
@@ -404,5 +426,6 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
+
 
 
