@@ -173,7 +173,6 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
         oy=self.transform('motor','screeny',oy)+self.graphy
         x=self.transform('light', 'screenx', x)+self.graphx
         y=self.transform('motor','screeny',y)+self.graphy
-        print("x and y and point",x,y, point)
         self.rect(self.graphx,self.graphy,self.graphwidthx,self.graphwidthy,1)
         
         self.line(self.graphx,oy,self.graphx+self.graphwidthx,oy,0)
