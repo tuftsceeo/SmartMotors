@@ -23,7 +23,7 @@ highlightedIcon=[]
 for numberofIcon in numberofIcons:
     highlightedIcon.append([0,numberofIcon])
 
-screenID=0
+screenID=1
 lastPressed=0
 previousIcon=0
 filenumber=0
@@ -33,7 +33,8 @@ points = []
 
 #Defining all flags
 #flags
-flags=[False,False,False,False]
+flags=[False,False,False,False, False]
+playFlag=False
 
 #switch flags
 switch_state_up = False
@@ -51,7 +52,6 @@ switched_select = False
 
 #mainloop flags
 clearscreen=False
-
 
 
 #define buttons , sensors and motors
@@ -83,14 +83,18 @@ display = icons.SSD1306_SMART(128, 64, i2c,switch_up)
 
 #interrupt functions
 def downpressed(count=-1):
-    time.sleep(0.1)
-    if(time.ticks_ms()-lastPressed>500):
+    global playFlag
+    playFlag = False
+    time.sleep(0.05)
+    if(time.ticks_ms()-lastPressed>200):
         displayselect(count)
 
     
 def uppressed(count=1):
-    time.sleep(0.1)
-    if(time.ticks_ms()-lastPressed>500):
+    global playFlag
+    playFlag = False 
+    time.sleep(0.05)
+    if(time.ticks_ms()-lastPressed>200):
         displayselect(count)
 
 
@@ -112,8 +116,6 @@ def selectpressed():
     global flags
     time.sleep(0.1)
     flags[highlightedIcon[screenID][0]]=True
-
-
         
 def resettohome():
     global screenID
@@ -153,8 +155,7 @@ def check_switch(p):
         
     elif switch_state_select != last_switch_state_select:
         switched_select = True
-        
-        
+                
     if switched_up:
         if switch_state_up == 0:
             uppressed()
@@ -204,6 +205,7 @@ def resetflags():
     
     
     
+    
 #setting up Timers
 tim = Timer(0)
 tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
@@ -221,14 +223,19 @@ oldpoint=[-1,-1]
 def shakemotor(point):
     motorpos=point[1]
     for i in range(2):
-        s.write_angle(motorpos+10)
+        s.write_angle(min(180,motorpos+5))
         time.sleep(0.1)
-        s.write_angle(motorpos-10)
+        s.write_angle(max(0,motorpos-5))
         time.sleep(0.1)
         
     print(motorpos)
     
-    
+
+
+datapoints=readfile()        
+if(datapoints):
+    numberofdata=len(datapoints)
+    points=datapoints[-1]
     
 while True:
     point = sens.readpoint()
@@ -236,8 +243,7 @@ while True:
     
     #Homepage
     #[fb_Train,fb_Play]
-
-
+    
     if(screenID==0):
         if(flags[0]):
             points=[] #empty the points arrray
@@ -246,7 +252,7 @@ while True:
             display.graph(oldpoint, point, points)
             
         elif(flags[1]):
-            screenID=3
+            screenID=2
             clearscreen=True
             datapoints=readfile()
             if (datapoints==[]):
@@ -255,61 +261,65 @@ while True:
             else:
                 display.graph(oldpoint, point, points)
             
-        #elif(flags[2]):
-        #    screenID=4
-    
     # Training Screen
     # [fb_add,fb_delete,fb_smallplay,fb_home]
-    elif(screenID==1):
-        if(flags[0]):
+    elif(screenID==1):        
+        if(flags[0]): # Play button is pressed
+            if (points):
+                playFlag=True
+                savetofile(points)
+                shakemotor(point)
+                #screenID=2 # trigger play screen
+                #uppressed(count=4)
+            else:
+                display.showmessage("No data to run")
+                #resettohome()
+        
+        elif(flags[1]): # add button is pressed
             points.append(list(point))
             display.graph(oldpoint, point, points)
             shakemotor(point)
             
-        elif(flags[1]):
+        elif(flags[2]): #delete button is pressed
             if(points): #delete only when there is something
                 points.pop()
             display.cleargraph()
             display.graph(oldpoint, point, points)
                 
-        elif(flags[2]):
-            if (points):
-                screenID=2 # trigger play screen
-                uppressed(count=4)
-            else:
-                display.showmessage("No data to run")
-                resettohome()
- 
-        elif(flags[3]): #Home
-           resettohome()
-           
-        if(not point==oldpoint): #only when point is different now
-            s.write_angle(point[1])
-            display.graph(oldpoint, point, points)
 
-    #Play Screen
-    #[fb_save,fb_pause,fb_home,fb_toggle]
-    elif(screenID==2):
-        if(flags[0]):  # save function here
-            savetofile(points)
-            uppressed(count=1)
-           
-        elif(flags[1]): # go home
-            resettohome()
         
-        #elif(flags[3]):  #toggle the data
-        #    pass
+        elif(flags[3]):  # change this to settings icon save button is pressed
+            # This is where we can put other advanced settings, maybe call the main screen
+            #screenId=0
+            #savetofile(points)
+            #resettohome()
             
-        if(not point==oldpoint): #only when point is different now
-            point = nearestNeighbor(points,point)
-            print(point)
-            s.write_angle(point[1])
-            display.graph(oldpoint, point, points)
+            print("some settings stuff")
+ 
+        elif(flags[4]): # help button is prssed
+            # quit to home
+            display.showmessage("This is for help whatever you need")
+         #  resettohome()
+           
 
+        
+        if(playFlag): #only when point is different now
+            if(not point==oldpoint): #only when point is different now
+                point = nearestNeighbor(points,point)
+                print(point)
+                s.write_angle(point[1])
+                display.graph(oldpoint, point, points)
+            
+        else:
+            if(not point==oldpoint): #only when point is different now
+                s.write_angle(point[1])
+                display.graph(oldpoint, point, points)
+
+    
     
     # Load saved files screen
     #[fb_next,fb_delete,fb_home,fb_toggle]
-    elif(screenID==3):
+    elif(screenID==2):
         datapoints=readfile()        
         if(datapoints):
             numberofdata=len(datapoints)

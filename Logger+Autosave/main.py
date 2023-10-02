@@ -23,17 +23,25 @@ highlightedIcon=[]
 for numberofIcon in numberofIcons:
     highlightedIcon.append([0,numberofIcon])
 
-screenID=0
+screenID=1
 lastPressed=0
 previousIcon=0
 filenumber=0
+
+
+currentlocaltime=0
+oldlocaltime=0
 
 points = []
 
 
 #Defining all flags
 #flags
-flags=[False,False,False,False]
+flags=[False,False,False,False, False]
+playFlag=False
+triggered=False
+LOGGING=True
+
 
 #switch flags
 switch_state_up = False
@@ -51,7 +59,6 @@ switched_select = False
 
 #mainloop flags
 clearscreen=False
-
 
 
 #define buttons , sensors and motors
@@ -82,17 +89,26 @@ display = icons.SSD1306_SMART(128, 64, i2c,switch_up)
 #highligtedIcons[screenID][0] =3 #Third
 
 #interrupt functions
+
 def downpressed(count=-1):
-    time.sleep(0.1)
-    if(time.ticks_ms()-lastPressed>500):
+    global playFlag
+    global triggered
+    playFlag = False
+    time.sleep(0.05)
+    if(time.ticks_ms()-lastPressed>200):
         displayselect(count)
-
     
-def uppressed(count=1):
-    time.sleep(0.1)
-    if(time.ticks_ms()-lastPressed>500):
-        displayselect(count)
+    triggered=True #log file
 
+
+def uppressed(count=1):
+    global playFlag
+    global triggered
+    playFlag = False 
+    time.sleep(0.05)
+    if(time.ticks_ms()-lastPressed>200):
+        displayselect(count)
+    triggered=True #log file
 
 
 def displayselect(selectedIcon):
@@ -100,7 +116,7 @@ def displayselect(selectedIcon):
     global highlightedIcon
     global lastPressed
     global previousIcon
-
+    
     highlightedIcon[screenID][0]=(highlightedIcon[screenID][0]+selectedIcon)%highlightedIcon[screenID][1]
     display.selector(screenID,highlightedIcon[screenID][0],previousIcon) #draw circle at selection position, and remove from the previousIconious position
     previousIcon=highlightedIcon[screenID][0]
@@ -110,10 +126,13 @@ def displayselect(selectedIcon):
 def selectpressed():
     #declare all global variables, include all flags
     global flags
+    global triggered
     time.sleep(0.1)
     flags[highlightedIcon[screenID][0]]=True
+    triggered=True #log file
+    
 
-
+    
         
 def resettohome():
     global screenID
@@ -153,8 +172,7 @@ def check_switch(p):
         
     elif switch_state_select != last_switch_state_select:
         switched_select = True
-        
-        
+                
     if switched_up:
         if switch_state_up == 0:
             uppressed()
@@ -177,6 +195,8 @@ def check_switch(p):
 def displaybatt(p):
     batterycharge=sens.readbattery()
     display.showbattery(batterycharge)
+    if LOGGING:
+        savetolog(time.time(),screenID,highlightedIcon, point,points) 
     return batterycharge
 
 
@@ -203,6 +223,10 @@ def resetflags():
         flags[i]=False
     
     
+datapoints=readfile()        
+if(datapoints):
+    numberofdata=len(datapoints)
+    points=datapoints[-1]    
     
 #setting up Timers
 tim = Timer(0)
@@ -211,9 +235,22 @@ batt = Timer(2)
 batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
 
 
-
 display.welcomemessage()
 
+
+if not switch_down.value() and not switch_up.value() and not switch_select.value():
+    resetlog()
+    LOGGING=True
+    print("resetting the log file")
+    
+if not switch_down.value() and not switch_up.value() and switch_select.value():
+    LOGGING=False
+    print("turn OFF the logging")
+
+if switch_down.value() and switch_up.value() and switch_select.value():
+    LOGGING=True
+    print("default: turn ON the logging")
+       
 #setup with homescreen  #starts with screenID=0
 display.selector(screenID,highlightedIcon[screenID][0],-1)
 oldpoint=[-1,-1]
@@ -221,23 +258,29 @@ oldpoint=[-1,-1]
 def shakemotor(point):
     motorpos=point[1]
     for i in range(2):
-        s.write_angle(motorpos+10)
+        s.write_angle(min(180,motorpos+5))
         time.sleep(0.1)
-        s.write_angle(motorpos-10)
+        s.write_angle(max(0,motorpos-5))
         time.sleep(0.1)
         
     print(motorpos)
     
-    
+
     
 while True:
+    #log       
     point = sens.readpoint()
+    if(triggered):
+        if LOGGING:
+            savetolog(time.time(),screenID,highlightedIcon, point,points)
+        triggered=False
+    
+
     #broadcast(point, screenID, highlightedIcon[screenID][0],ID)
     
     #Homepage
     #[fb_Train,fb_Play]
-
-
+    
     if(screenID==0):
         if(flags[0]):
             points=[] #empty the points arrray
@@ -246,7 +289,7 @@ while True:
             display.graph(oldpoint, point, points)
             
         elif(flags[1]):
-            screenID=3
+            screenID=2
             clearscreen=True
             datapoints=readfile()
             if (datapoints==[]):
@@ -255,61 +298,66 @@ while True:
             else:
                 display.graph(oldpoint, point, points)
             
-        #elif(flags[2]):
-        #    screenID=4
-    
     # Training Screen
     # [fb_add,fb_delete,fb_smallplay,fb_home]
-    elif(screenID==1):
-        if(flags[0]):
+    elif(screenID==1):        
+        if(flags[0]): # Play button is pressed
+            if (points):
+                playFlag=True
+                savetofile(points)
+                shakemotor(point)
+                #screenID=2 # trigger play screen
+                #uppressed(count=4)
+            else:
+                cleardatafile()
+                display.showmessage("NO DATA")
+                #resettohome()
+        
+        elif(flags[1]): # add button is pressed
             points.append(list(point))
             display.graph(oldpoint, point, points)
             shakemotor(point)
             
-        elif(flags[1]):
+        elif(flags[2]): #delete button is pressed
             if(points): #delete only when there is something
                 points.pop()
             display.cleargraph()
             display.graph(oldpoint, point, points)
                 
-        elif(flags[2]):
-            if (points):
-                screenID=2 # trigger play screen
-                uppressed(count=4)
-            else:
-                display.showmessage("No data to run")
-                resettohome()
- 
-        elif(flags[3]): #Home
-           resettohome()
-           
-        if(not point==oldpoint): #only when point is different now
-            s.write_angle(point[1])
-            display.graph(oldpoint, point, points)
 
-    #Play Screen
-    #[fb_save,fb_pause,fb_home,fb_toggle]
-    elif(screenID==2):
-        if(flags[0]):  # save function here
-            savetofile(points)
-            uppressed(count=1)
-           
-        elif(flags[1]): # go home
-            resettohome()
         
-        #elif(flags[3]):  #toggle the data
-        #    pass
+        elif(flags[3]):  # change this to settings icon save button is pressed
+            # This is where we can put other advanced settings, maybe call the main screen
+            #screenId=0
+            #savetofile(points)
+            #resettohome()
             
-        if(not point==oldpoint): #only when point is different now
-            point = nearestNeighbor(points,point)
-            print(point)
-            s.write_angle(point[1])
-            display.graph(oldpoint, point, points)
+            print("some settings stuff")
+ 
+        elif(flags[4]): # help button is prssed
+            # quit to home
+            display.showmessage("This is for help whatever you need")
+         #  resettohome()
+           
 
+        
+        if(playFlag): #only when point is different now
+            if(not point==oldpoint): #only when point is different now
+                point = nearestNeighbor(points,point)
+                print(point)
+                s.write_angle(point[1])
+                display.graph(oldpoint, point, points)
+
+            
+        else:
+            if(not point==oldpoint): #only when point is different now
+                s.write_angle(point[1])
+                display.graph(oldpoint, point, points)
+                    
     
     # Load saved files screen
     #[fb_next,fb_delete,fb_home,fb_toggle]
-    elif(screenID==3):
+    elif(screenID==2):
         datapoints=readfile()        
         if(datapoints):
             numberofdata=len(datapoints)
@@ -356,12 +404,5 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
-
-
-
-
-
-
-
 
 

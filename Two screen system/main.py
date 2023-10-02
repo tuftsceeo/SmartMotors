@@ -33,7 +33,8 @@ points = []
 
 #Defining all flags
 #flags
-flags=[False,False,False,False]
+flags=[False,False,False,False, False]
+playFlag=False
 
 #switch flags
 switch_state_up = False
@@ -51,7 +52,6 @@ switched_select = False
 
 #mainloop flags
 clearscreen=False
-
 
 
 #define buttons , sensors and motors
@@ -83,12 +83,16 @@ display = icons.SSD1306_SMART(128, 64, i2c,switch_up)
 
 #interrupt functions
 def downpressed(count=-1):
+    global playFlag
+    playFlag = False
     time.sleep(0.1)
     if(time.ticks_ms()-lastPressed>500):
         displayselect(count)
 
     
 def uppressed(count=1):
+    global playFlag
+    playFlag = False 
     time.sleep(0.1)
     if(time.ticks_ms()-lastPressed>500):
         displayselect(count)
@@ -112,8 +116,6 @@ def selectpressed():
     global flags
     time.sleep(0.1)
     flags[highlightedIcon[screenID][0]]=True
-
-
         
 def resettohome():
     global screenID
@@ -153,8 +155,7 @@ def check_switch(p):
         
     elif switch_state_select != last_switch_state_select:
         switched_select = True
-        
-        
+                
     if switched_up:
         if switch_state_up == 0:
             uppressed()
@@ -221,9 +222,9 @@ oldpoint=[-1,-1]
 def shakemotor(point):
     motorpos=point[1]
     for i in range(2):
-        s.write_angle(motorpos+10)
+        s.write_angle(min(180,motorpos+5))
         time.sleep(0.1)
-        s.write_angle(motorpos-10)
+        s.write_angle(max(0,motorpos-5))
         time.sleep(0.1)
         
     print(motorpos)
@@ -246,7 +247,7 @@ while True:
             display.graph(oldpoint, point, points)
             
         elif(flags[1]):
-            screenID=3
+            screenID=2
             clearscreen=True
             datapoints=readfile()
             if (datapoints==[]):
@@ -255,61 +256,58 @@ while True:
             else:
                 display.graph(oldpoint, point, points)
             
-        #elif(flags[2]):
-        #    screenID=4
-    
     # Training Screen
     # [fb_add,fb_delete,fb_smallplay,fb_home]
     elif(screenID==1):
-        if(flags[0]):
+        
+        if(flags[0]): # add button is pressed
             points.append(list(point))
             display.graph(oldpoint, point, points)
             shakemotor(point)
             
-        elif(flags[1]):
+        elif(flags[1]): #delete button is pressed
             if(points): #delete only when there is something
                 points.pop()
             display.cleargraph()
             display.graph(oldpoint, point, points)
                 
-        elif(flags[2]):
+        elif(flags[2]): # Play button is pressed
             if (points):
-                screenID=2 # trigger play screen
-                uppressed(count=4)
+                playFlag=True
+                #screenID=2 # trigger play screen
+                #uppressed(count=4)
             else:
                 display.showmessage("No data to run")
-                resettohome()
+                #resettohome()
+        
+        elif(flags[3]):  # save button is pressed
+            # save and quit
+            savetofile(points)
+            resettohome()
  
-        elif(flags[3]): #Home
+        elif(flags[4]): # home button is prssed
+            # quit to home
            resettohome()
            
-        if(not point==oldpoint): #only when point is different now
-            s.write_angle(point[1])
-            display.graph(oldpoint, point, points)
 
-    #Play Screen
-    #[fb_save,fb_pause,fb_home,fb_toggle]
-    elif(screenID==2):
-        if(flags[0]):  # save function here
-            savetofile(points)
-            uppressed(count=1)
-           
-        elif(flags[1]): # go home
-            resettohome()
         
-        #elif(flags[3]):  #toggle the data
-        #    pass
+        if(playFlag): #only when point is different now
+            if(not point==oldpoint): #only when point is different now
+                point = nearestNeighbor(points,point)
+                print(point)
+                s.write_angle(point[1])
+                display.graph(oldpoint, point, points)
             
-        if(not point==oldpoint): #only when point is different now
-            point = nearestNeighbor(points,point)
-            print(point)
-            s.write_angle(point[1])
-            display.graph(oldpoint, point, points)
+        else:
+            if(not point==oldpoint): #only when point is different now
+                s.write_angle(point[1])
+                display.graph(oldpoint, point, points)
 
+    
     
     # Load saved files screen
     #[fb_next,fb_delete,fb_home,fb_toggle]
-    elif(screenID==3):
+    elif(screenID==2):
         datapoints=readfile()        
         if(datapoints):
             numberofdata=len(datapoints)
@@ -356,8 +354,6 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
-
-
 
 
 
