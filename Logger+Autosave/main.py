@@ -249,13 +249,15 @@ def setloggingmode():
     if not switch_down.value() and not switch_up.value() and not switch_select.value():
         resetlog()  #delete all the previous logs
         setprefs()  #sets preference file to True 
-
+        display.showmessage("LOG: ON")
         print("resetting the log file")
+        
 
     #resets prefs to not log by default
     if not switch_down.value() and not switch_up.value() and switch_select.value():
         resetprefs()  #resets preference file to False
         print("turn OFF the logging")
+        display.showmessage("LOG: OFF")
 
 
     if switch_down.value() and switch_up.value() and switch_select.value():
@@ -428,6 +430,7 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
+
 
 
 
