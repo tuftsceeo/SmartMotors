@@ -59,7 +59,10 @@ def readfile():
 
 def resetlog():
     import os
-    os.remove("log.py")
+    try:
+        os.remove("log.py")
+    except:
+        print("no log file to remove")
     
 def resetprefs():
     f=open("prefs.py","w")
