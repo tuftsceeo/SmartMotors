@@ -268,6 +268,8 @@ def setloggingmode():
 
 
 points=readdatapoints()
+if points==[]:
+    highlightedIcon[1][0]=1  #go to add if there are no data saved
 
 #setting up Timers
 tim = Timer(0)
@@ -426,6 +428,7 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
+
 
 
 
