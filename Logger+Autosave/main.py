@@ -312,7 +312,7 @@ while True:
             points=[] #empty the points arrray
             screenID=1
             clearscreen=True
-            display.graph(oldpoint, point, points)
+            display.graph(oldpoint, point, points,0) #normal color
             
         elif(flags[1]):
             screenID=2
@@ -322,7 +322,7 @@ while True:
                 display.showmessage("No data saved")
                 resettohome()
             else:
-                display.graph(oldpoint, point, points)
+                display.graph(oldpoint, point, points,0) #normal color
             
     # Training Screen
     # [fb_add,fb_delete,fb_smallplay,fb_home]
@@ -341,14 +341,14 @@ while True:
         
         elif(flags[1]): # add button is pressed
             points.append(list(point))
-            display.graph(oldpoint, point, points)
+            display.graph(oldpoint, point, points,0)
             shakemotor(point)
             
         elif(flags[2]): #delete button is pressed
             if(points): #delete only when there is something
                 points.pop()
             display.cleargraph()
-            display.graph(oldpoint, point, points)
+            display.graph(oldpoint, point, points,0)
                 
 
         
@@ -372,13 +372,13 @@ while True:
                 point = nearestNeighbor(points,point)
                 print(point)
                 s.write_angle(point[1])
-                display.graph(oldpoint, point, points)
+                display.graph(oldpoint, point, points,1) #inverted color
 
             
         else:
             if(not point==oldpoint): #only when point is different now
                 s.write_angle(point[1])
-                display.graph(oldpoint, point, points)
+                display.graph(oldpoint, point, points,0) #normal color 
                     
     
     # Load saved files screen
@@ -406,7 +406,7 @@ while True:
             if(not point==oldpoint): #only when point is different now
                 point = nearestNeighbor(points,point)
                 s.write_angle(point[1])
-                display.graph(oldpoint, point, points)
+                display.graph(oldpoint, point, points,0) #normal color
         else:
             display.showmessage("No files to show")
             resettohome()
@@ -430,8 +430,5 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
-
-
-
 
 

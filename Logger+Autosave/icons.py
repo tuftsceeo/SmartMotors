@@ -100,7 +100,7 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
         self.iconx=0
         self.icony=29
         
-        
+        self.color=0
         self.graphwidthx=100
         self.graphwidthy=64
         self.iconwidth=25
@@ -161,7 +161,16 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
         final = self.ranges[final]
         return int((final[1]-final[0]) / (initial[1]-initial[0]) * (value - initial[0]) + final[0])
     
-    def graph(self, oldpoint,point, points):
+    def graph(self, oldpoint,point, points, color):
+        if color==self.color:
+            #don't change
+            pass
+        else:
+            self.color=color
+            #clear the screen with the latest color
+            self.fill_rect(self.graphx,self.graphy,self.graphwidthx,self.graphwidthy,color)
+            
+            
         rectsize=8
         dotsize=4
         
@@ -173,21 +182,21 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
         oy=self.transform('motor','screeny',oy)+self.graphy
         x=self.transform('light', 'screenx', x)+self.graphx
         y=self.transform('motor','screeny',y)+self.graphy
-        self.rect(self.graphx,self.graphy,self.graphwidthx,self.graphwidthy,1)
+        self.rect(self.graphx,self.graphy,self.graphwidthx,self.graphwidthy,(color+1)%2)
         
-        self.line(self.graphx,oy,self.graphx+self.graphwidthx,oy,0)
-        self.line(ox,self.graphy,ox,self.graphy+self.graphwidthy,0)
+        self.line(self.graphx,oy,self.graphx+self.graphwidthx,oy,color%2)
+        self.line(ox,self.graphy,ox,self.graphy+self.graphwidthy,color%2)
         
-        self.line(self.graphx,y,self.graphx+self.graphwidthx,y,1)
-        self.line(x,self.graphy,x,self.graphy+self.graphwidthy,1)
+        self.line(self.graphx,y,self.graphx+self.graphwidthx,y,(color+1)%2)
+        self.line(x,self.graphy,x,self.graphy+self.graphwidthy,(color+1)%2)
         
-        self.rect(ox-int(rectsize/2),oy-int(rectsize/2),rectsize,rectsize,0)
-        self.rect(x-int(rectsize/2),y-int(rectsize/2),rectsize,rectsize,1)
+        self.rect(ox-int(rectsize/2),oy-int(rectsize/2),rectsize,rectsize,color%2)
+        self.rect(x-int(rectsize/2),y-int(rectsize/2),rectsize,rectsize,(color+1)%2)
         for i in points:
             x,y=i
             x=self.transform('light', 'screenx', x)+self.graphx
             y=self.transform('motor','screeny',y)+self.graphy
-            self.fill_rect(x-int(dotsize/2),y-int(dotsize/2),dotsize,dotsize,1)
+            self.fill_rect(x-int(dotsize/2),y-int(dotsize/2),dotsize,dotsize,(color+1)%2)
         self.show()
     
     def cleargraph(self):
@@ -229,11 +238,4 @@ class SSD1306_SMART(ssd1306.SSD1306_I2C):
     def clear(self):
         self.fill(0)
         self.show()
-
-
-
-
-
-
-
 
