@@ -29,6 +29,11 @@ class SENSORS:
         self.roll=None
         self.pitch=None
         
+        self.last_color = 0
+        self.last_brightness = 100
+        self.last_number = 12
+        self.last_light = 0
+        
         
     def readlight(self):
         return self.light.read()
@@ -64,7 +69,7 @@ class SENSORS:
         p=p[300:600]
         avlight=sum(l)/len(l)
         avpos=sum(p)/len(p)
-    
+            
         point = avlight, self.mappot(avpos)
         return point
     

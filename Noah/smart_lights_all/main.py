@@ -75,7 +75,7 @@ i2c = SoftI2C(scl = Pin(7), sda = Pin(6))
 display = icons.SSD1306_SMART(128, 64, i2c,switch_up)
 
 #scale values for raibow lights instead of servo motor
-output_range = [0, s.get_resolution()]
+output_range = [0, 1000]
 sens.set_final_range(output_range) #ensure output of sensor mapping gives correct range
 display.set_output_range(output_range) #ensure display shows correct range in y direction
 
@@ -274,6 +274,9 @@ def setloggingmode():
 
 
 points=readdatapoints()
+points_color = []
+points_number = []
+points_brightness = []
 if points==[]:
     highlightedIcon[1][0]=1  #go to add if there are no data saved
 
@@ -292,11 +295,12 @@ LOGGING=setloggingmode()
 #setup with homescreen  #starts with screenID=0
 display.selector(screenID,highlightedIcon[screenID][0],-1)
 oldpoint=[-1,-1]
-
+highlighted = highlightedIcon[screenID][0]
     
 while True:
     #log       
     point = sens.readpoint()
+    #print(highlightedIcon[screenID][0])
     if(triggered):
         if LOGGING:
             savetolog(time.time(),screenID,highlightedIcon, point,points)
@@ -311,6 +315,9 @@ while True:
     if(screenID==0):
         if(flags[0]):
             points=[] #empty the points arrray
+            points_color = []
+            points_brightness = []
+            points_number = []
             screenID=1
             clearscreen=True
             display.graph(oldpoint, point, points)
@@ -327,11 +334,15 @@ while True:
             
     # Training Screen
     # [fb_add,fb_delete,fb_smallplay,fb_home]
-    elif(screenID==1):        
+    elif(screenID==1):
+        
+        if (highlighted != highlightedIcon[screenID][0]):
+            display.cleargraph()
+        
         if(flags[0]): # Play button is pressed
-            if (points):
+            if (points_color and points_brightness and points_number):
                 playFlag=True
-                savetofile(points)
+                #savetofile(points)
                 #shakemotor(point)
                 #screenID=2 # trigger play screen
                 #uppressed(count=4)
@@ -341,45 +352,61 @@ while True:
                 #resettohome()
         
         elif(flags[1]): # add button is pressed
+            points_color.append(list(point))
             points.append(list(point))
             display.graph(oldpoint, point, points)
             #shakemotor(point)
             
-        elif(flags[2]): #delete button is pressed
-            if(points): #delete only when there is something
-                points.pop()
-            display.cleargraph()
-            display.graph(oldpoint, point, points)
+        elif(flags[2]): #brightness add button is pressed
+            points_brightness.append(list(point))
+            points.append(list(point))
+            display.graph(oldpoint, point, points_brightness)
                 
 
-        
-        elif(flags[3]):  # change this to settings icon save button is pressed
-            # This is where we can put other advanced settings, maybe call the main screen
-            #screenId=0
-            #savetofile(points)
-            #resettohome()
-            
-            print("some settings stuff")
+        elif(flags[3]): #number add button is pressed
+            points_number.append(list(point))
+            points.append(list(point))
+            display.graph(oldpoint, point, points_number)
+
  
-        elif(flags[4]): # help button is prssed
-            # quit to home
-            display.showmessage("This is for help whatever you need")
-         #  resettohome()
-           
+        elif(flags[4]): #delete button is pressed
+            if(points): #delete only when there is something
+                points.pop()
+            if(points_color): points_color.pop()
+            if(points_brightness): points_brightness.pop()
+            if(points_number): points_number.pop()
+            display.cleargraph()
+            display.graph(oldpoint, point, points)
 
         
         if(playFlag): #only when point is different now
             if(not point==oldpoint): #only when point is different now
                 point = nearestNeighbor(points,point)
-                #print(point)
-                s.write_LED(point[1])
+                s.write_color(nearestNeighbor(points_color,point)[1])
+                s.write_brightness(nearestNeighbor(points_brightness,point)[1])
+                s.write_number(nearestNeighbor(points_number,point)[1])
                 display.graph(oldpoint, point, points)
 
             
         else:
             if(not point==oldpoint): #only when point is different now
-                s.write_LED(point[1])
-                display.graph(oldpoint, point, points)
+                
+                display.cleargraph()
+                
+                if (highlighted == 1): #training color
+                    s.write_color(point[1])
+                    display.graph(oldpoint, point, points_color)
+                    
+                elif(highlighted == 2): #training brightness
+                    s.write_brightness(point[1])
+                    display.graph(oldpoint, point, points_brightness)
+                    
+                elif (highlighted == 3): #training number
+                    s.write_number(point[1])
+                    display.graph(oldpoint, point, points_number)
+                    
+                else:
+                    display.graph(oldpoint, point, points)
                     
     
     # Load saved files screen
@@ -406,7 +433,7 @@ while True:
                 
             if(not point==oldpoint): #only when point is different now
                 point = nearestNeighbor(points,point)
-                s.write_LED(point[1])
+                s.write_color(point[1])
                 display.graph(oldpoint, point, points)
         else:
             display.showmessage("No files to show")
@@ -426,6 +453,7 @@ while True:
             resettohome()
                     
     oldpoint=point
+    highlighted = highlightedIcon[screenID][0]
     resetflags()
     if clearscreen:
         display.fill(0)
