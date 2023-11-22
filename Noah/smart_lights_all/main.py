@@ -340,7 +340,7 @@ while True:
             display.cleargraph()
         
         if(flags[0]): # Play button is pressed
-            if (points_color and points_brightness and points_number):
+            if (points):
                 playFlag=True
                 #savetofile(points)
                 #shakemotor(point)
@@ -382,9 +382,10 @@ while True:
         if(playFlag): #only when point is different now
             if(not point==oldpoint): #only when point is different now
                 point = nearestNeighbor(points,point)
-                s.write_color(nearestNeighbor(points_color,point)[1])
-                s.write_brightness(nearestNeighbor(points_brightness,point)[1])
-                s.write_number(nearestNeighbor(points_number,point)[1])
+                if (points_color): s.set_color(nearestNeighbor(points_color,point)[1])
+                if (points_brightness): s.set_brightness(nearestNeighbor(points_brightness,point)[1])
+                if (points_number): s.set_number(nearestNeighbor(points_number,point)[1])
+                s.update()
                 display.graph(oldpoint, point, points)
 
             
@@ -394,15 +395,21 @@ while True:
                 display.cleargraph()
                 
                 if (highlighted == 1): #training color
-                    s.write_color(point[1])
+                    s.set_white()
+                    s.set_color(point[1])
+                    s.update()
                     display.graph(oldpoint, point, points_color)
                     
                 elif(highlighted == 2): #training brightness
-                    s.write_brightness(point[1])
+                    s.set_white()
+                    s.set_brightness(point[1])
+                    s.update()
                     display.graph(oldpoint, point, points_brightness)
                     
                 elif (highlighted == 3): #training number
-                    s.write_number(point[1])
+                    s.set_white()
+                    s.set_number(point[1])
+                    s.update()
                     display.graph(oldpoint, point, points_number)
                     
                 else:
