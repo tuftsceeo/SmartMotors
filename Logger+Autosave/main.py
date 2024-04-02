@@ -1,5 +1,3 @@
-v=1
-#V is the version for version control
 from machine import Pin, SoftI2C, PWM, ADC
 from files import *
 import time
