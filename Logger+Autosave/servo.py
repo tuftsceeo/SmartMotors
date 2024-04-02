@@ -1,7 +1,6 @@
 v=1
 #V is the version for version control
-f=open('servo.py','w')
-a='''
+
 from machine import PWM
 import math
 
@@ -34,7 +33,4 @@ class Servo:
         total_range = self.max_us - self.min_us
         us = self.min_us + total_range * degrees // self.angle
         self.write_us(us)
-        
-'''
-f.write(a)
-f.close()
+
