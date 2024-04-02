@@ -1,3 +1,5 @@
+v=1
+#V is the version for version control
 f=open("ssd1306.py","w")
 a='''
 # This is an ssd1306 package we found on the internet.
