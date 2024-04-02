@@ -1,4 +1,4 @@
-v=1%
+v=1
 #V is the version for version control
 import sys
 def savetofile(pointstosave): # the points to save should have format of [[light, pot],[light,pot]]
