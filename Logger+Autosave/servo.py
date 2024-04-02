@@ -1,3 +1,5 @@
+v=1
+#V is the version for version control
 f=open('servo.py','w')
 a='''
 from machine import PWM
