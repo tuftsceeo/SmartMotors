@@ -1,4 +1,4 @@
-v=1%
+v=1
 #V is the version for version control
 from machine import Pin,I2C
 import math
