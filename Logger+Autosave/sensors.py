@@ -1,5 +1,3 @@
-v=1
-#V is the version for version control
 from machine import Pin,I2C
 from machine import Pin, SoftI2C, PWM, ADC
 import adxl345
