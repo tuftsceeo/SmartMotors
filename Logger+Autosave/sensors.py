@@ -9,7 +9,7 @@ i2c = SoftI2C(scl = Pin(7), sda = Pin(6))
 class SENSORS:
     def __init__(self,connection=i2c):
         self.i2c=connection
-        #self.adx = adxl345.ADXL345(self.i2c)
+        self.adx = adxl345.ADXL345(self.i2c)
         
         self.initial = [0, 4095]
         self.final =  [0, 180]
