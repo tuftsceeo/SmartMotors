@@ -48,7 +48,7 @@ class SENSORS:
     
     def readroll(self):
         self.accel()
-        self.roll, self.pitch =  adx.RP_calculate(self.x,self.y,self.z)
+        self.roll, self.pitch =  self.adx.RP_calculate(self.x,self.y,self.z)
         return self.roll,self.pitch
     
         
