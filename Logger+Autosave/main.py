@@ -2,7 +2,6 @@ from machine import Pin, SoftI2C, PWM, ADC
 from files import *
 import time
 from machine import Timer
-#import smarttools
 import servo
 import icons
 import os
@@ -204,7 +203,6 @@ def nearestNeighbor(data, point):
     try:
         point = point[0]
     except TypeError:
-        print("error")
         pass
     if len(data) == 0:
         return 0
@@ -214,7 +212,7 @@ def nearestNeighbor(data, point):
         if abs(i[0] - point) <= diff:
             diff = abs(i[0] - point)
             test = i
-    return test
+    return (point, test[1])
 
 def resetflags():
     global flags
@@ -230,7 +228,6 @@ def shakemotor(point):
         s.write_angle(max(0,motorpos-5))
         time.sleep(0.1)
         
-    print(motorpos)
     
     
 
@@ -429,5 +426,6 @@ while True:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
+
 
 
