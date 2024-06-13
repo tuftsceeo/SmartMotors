@@ -126,7 +126,6 @@ def selectpressed():
     global flags
     global triggered
     time.sleep(0.05)
-    print("pressed")
     flags[highlightedIcon[screenID][0]]=True    
     triggered=True #log file
     
