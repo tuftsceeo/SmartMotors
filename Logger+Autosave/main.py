@@ -1,9 +1,7 @@
-
 from machine import Pin, SoftI2C, PWM, ADC
 from files import *
 import time
 from machine import Timer
-#import smarttools
 import servo
 import icons
 import os
@@ -127,8 +125,8 @@ def selectpressed():
     #declare all global variables, include all flags
     global flags
     global triggered
-    time.sleep(0.1)
-    flags[highlightedIcon[screenID][0]]=True
+    time.sleep(0.05)
+    flags[highlightedIcon[screenID][0]]=True    
     triggered=True #log file
     
 
@@ -205,7 +203,6 @@ def nearestNeighbor(data, point):
     try:
         point = point[0]
     except TypeError:
-        print("error")
         pass
     if len(data) == 0:
         return 0
@@ -215,7 +212,7 @@ def nearestNeighbor(data, point):
         if abs(i[0] - point) <= diff:
             diff = abs(i[0] - point)
             test = i
-    return test
+    return (point, test[1])
 
 def resetflags():
     global flags
@@ -231,7 +228,6 @@ def shakemotor(point):
         s.write_angle(max(0,motorpos-5))
         time.sleep(0.1)
         
-    print(motorpos)
     
     
 
@@ -313,6 +309,7 @@ while True:
             screenID=1
             clearscreen=True
             display.graph(oldpoint, point, points,0) #normal color
+            resetflags()
             
         elif(flags[1]):
             screenID=2
@@ -323,6 +320,7 @@ while True:
                 resettohome()
             else:
                 display.graph(oldpoint, point, points,0) #normal color
+            resetflags()
             
     # Training Screen
     # [fb_add,fb_delete,fb_smallplay,fb_home]
@@ -337,19 +335,21 @@ while True:
             else:
                 cleardatafile()
                 display.showmessage("NO DATA")
-                #resettohome()
-        
+            resetflags()
+            
+            
         elif(flags[1]): # add button is pressed
             points.append(list(point))
             display.graph(oldpoint, point, points,0)
             shakemotor(point)
+            resetflags()
             
         elif(flags[2]): #delete button is pressed
             if(points): #delete only when there is something
                 points.pop()
             display.cleargraph()
             display.graph(oldpoint, point, points,0)
-                
+            resetflags()    
 
         
         elif(flags[3]):  # change this to settings icon save button is pressed
@@ -359,26 +359,29 @@ while True:
             #resettohome()
             
             print("some settings stuff")
- 
+            resetflags()
+            
         elif(flags[4]): # help button is prssed
             # quit to home
             display.showmessage("This is for help whatever you need")
          #  resettohome()
-           
+            resetflags()
 
         
         if(playFlag): #only when point is different now
             if(not point==oldpoint): #only when point is different now
                 point = nearestNeighbor(points,point)
-                print(point)
                 s.write_angle(point[1])
                 display.graph(oldpoint, point, points,1) #inverted color
+ 
 
             
         else:
             if(not point==oldpoint): #only when point is different now
                 s.write_angle(point[1])
-                display.graph(oldpoint, point, points,0) #normal color 
+                display.graph(oldpoint, point, points,0) #normal color
+                
+
                     
     
     # Load saved files screen
@@ -393,15 +396,18 @@ while True:
                 filenumber=((filenumber+1)%numberofdata)
                 points=datapoints[filenumber]
                 display.cleargraph()
+                resetflags()
                 
             elif(flags[1]):
                 del datapoints[filenumber]
                 replacefile(datapoints)
                 filenumber=0
                 display.cleargraph()
-
+                resetflags()
+                
             elif(flags[2]):
                 resettohome()
+                resetflags()
                 
             if(not point==oldpoint): #only when point is different now
                 point = nearestNeighbor(points,point)
@@ -417,18 +423,22 @@ while True:
         if(flags[0]):
             display.showmessage(ID)
             waitforconnection()
+            resetflags()
             
         elif(flags[1]):
             print("I shall follow you")
-        
+            resetflags()
+            
         elif(flags[2]):
             resettohome()
+            resetflags()
                     
     oldpoint=point
-    resetflags()
     if clearscreen:
         display.fill(0)
         display.selector(screenID,highlightedIcon[screenID][0],-1)
         clearscreen=False
+
+
 
 
