@@ -1,3 +1,6 @@
+from time import sleep_ms
+print("new")
+import time
 I2C_CMD_CONTINUE_DATA = 0x81
 
 GROVE_TWO_RGB_LED_MATRIX_DEF_I2C_ADDR = 0x65  # Default I2C address
@@ -49,6 +52,12 @@ class LEDMATRIX:
 
     def _i2c_send_byte(self, address, data):
         self.i2c.writeto(address, bytearray([data]))
+    
+
+    def _i2c_send_continue_bytes(self, address: int, data):
+        """Send multiple bytes starting with a continue command."""
+        cbytes = I2C_CMD_CONTINUE_DATA
+        self.i2c.writeto(address, bytearray([cbytes + data]))
 
     def _i2c_send_bytes(self, address, data):
         self.i2c.writeto(address, bytearray(data))
@@ -74,13 +83,13 @@ class LEDMATRIX:
         self._i2c_send_bytes(self.current_device_address, data)
         self.base_address = new_address
         self.current_device_address = self.base_address + self.offset_address
-        sleep_ms(200)
+        time.time.sleep_ms(200)
 
     def default_device_address(self):
         self._i2c_send_byte(self.current_device_address, I2C_CMD_RST_ADDR)
         self.base_address = GROVE_TWO_RGB_LED_MATRIX_DEF_I2C_ADDR
         self.current_device_address = self.base_address + self.offset_address
-        sleep_ms(200)
+        time.sleep_ms(200)
 
     def turn_on_led_flash(self):
         self._i2c_send_byte(self.current_device_address, I2C_CMD_LED_ON)
@@ -121,6 +130,9 @@ class LEDMATRIX:
         data = [I2C_CMD_DISP_NUM, number & 0xff, (number >> 8) & 0xff, duration_time & 0xff,
                 (duration_time >> 8) & 0xff, forever_flag, color]
         self._i2c_send_bytes(self.current_device_address, data)
+        
+        
+        
 
     def display_string(self, text, duration_time, forever_flag, color):
         text = text[:28]  # Max length is 28
@@ -129,11 +141,50 @@ class LEDMATRIX:
                list(map(ord, text))
         if length > 25:
             self._i2c_send_bytes(self.current_device_address, data[:31])
-            sleep_ms(1)
+            time.sleep_ms(1)
             self._i2c_send_bytes(self.current_device_address, data[31:])
         else:
             self._i2c_send_bytes(self.current_device_address, data)
 
+
+    def display_frames(self, buffer, duration_time, forever_flag, frames_number):
+        if frames_number > 5:
+            frames_number = 5
+        if frames_number == 0:
+            return
+        
+        data[0] = I2C_CMD_DISP_CUSTOM
+        data[1] = 0x0
+        data[2] = 0x0
+        data[3] = 0x0
+        data[4] = frames_number;
+        
+        for i in range(frames_number - 1, -1, -1):
+            data = [I2C_CMD_DISP_CUSTOM, 0, 0, 0, frames_number, i] + [0] * 64
+            
+            # Fill the frame data (reverse byte order for each 8x8 block if necessary)
+            for j in range(8):
+                for k in range(8):
+                    data[8 + j * 8 + (7 - k)] = buffer[j * 8 + k + i * 64]
+
+            # For the last frame, set the duration and forever_flag
+            if i == 0:
+                data[1] = duration_time & 0xff
+                data[2] = (duration_time >> 8) & 0xff
+                data[3] = forever_flag
+
+            # Send first 24 bytes
+            self._i2c_send_bytes(self.current_device_address, data[:24])
+            time.sleep_ms(1)  # Small delay
+
+            # Send next 24 bytes (from index 24 to 48)
+            self._i2c_send_bytes(self.current_device_address, data[24:48])
+            time.sleep_ms(1)  # Small delay
+
+            # Send last 24 bytes (from index 48 to 72)
+            self._i2c_send_bytes(self.current_device_address, data[48:72])
+            time.sleep_ms(1)  # Small delay
+    '''
     def display_frames(self, buffer, duration_time, forever_flag, frames_number):
         if frames_number > 5:
             frames_number = 5
@@ -146,21 +197,22 @@ class LEDMATRIX:
                 data[2] = (duration_time >> 8) & 0xff
                 data[3] = forever_flag
             self._i2c_send_bytes(self.current_device_address, data[:24])
-            sleep_ms(1)
+            time.sleep_ms(1)
             self._i2c_send_bytes(self.current_device_address, data[24:48])
-            sleep_ms(1)
+            time.sleep_ms(1)
             self._i2c_send_bytes(self.current_device_address, data[48:72])
-
+    '''
     def stop_display(self):
         self._i2c_send_byte(self.current_device_address, I2C_CMD_DISP_OFF)
 
     def store_frames(self):
         self._i2c_send_byte(self.current_device_address, I2C_CMD_STORE_FLASH)
-        sleep_ms(200)
+        time.sleep_ms(200)
+
 
     def delete_frames(self):
         self._i2c_send_byte(self.current_device_address, I2C_CMD_DELETE_FLASH)
-        sleep_ms(200)
+        time.sleep_ms(200)
 
     def display_frames_from_flash(self, duration_time, forever_flag):
         data = [I2C_CMD_DISP_FLASH, duration_time & 0xff, (duration_time >> 8) & 0xff, forever_flag]
@@ -183,9 +235,30 @@ class LEDMATRIX:
         self._i2c_send_bytes(self.current_device_address, data)
 
     def display_color_animation(self, index, duration_time, forever_flag):
-        data = [I2C_CMD_DISP_COLOR_ANIMATION, index, duration_time & 0xff, (duration_time >> 8) & 0xff, forever_flag]
+        
+        if(index ==0):
+            fro = 0
+            to =28
+        elif(index ==1):
+            fro = 29
+            to =41
+        elif(index ==2):
+            fro = 255
+            to =255
+        elif(index ==3):
+            fro =254
+            to =254
+        elif(index ==4):
+            fro = 42
+            to =43
+        elif(index ==5):
+            fro = 44
+            to =52
+            
+        data = [I2C_CMD_DISP_COLOR_ANIMATION, fro, to, duration_time & 0xff, (duration_time >> 8) & 0xff, forever_flag]
         self._i2c_send_bytes(self.current_device_address, data)
-
+        
+    
     def enable_test_mode(self):
         self._i2c_send_byte(self.current_device_address, I2C_CMD_TEST_TX_RX_ON)
 
