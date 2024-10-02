@@ -57,7 +57,7 @@ class LEDMATRIX:
     def _i2c_send_continue_bytes(self, address: int, data):
         """Send multiple bytes starting with a continue command."""
         cbytes = I2C_CMD_CONTINUE_DATA
-        self.i2c.writeto(address, bytearray([cbytes + data]))
+        self.i2c.writeto(address, bytearray([cbytes] + data))
 
     def _i2c_send_bytes(self, address, data):
         self.i2c.writeto(address, bytearray(data))
@@ -153,6 +153,7 @@ class LEDMATRIX:
         if frames_number == 0:
             return
         
+        data = [0x0]*72 # intialize an array of zeros 72 long
         data[0] = I2C_CMD_DISP_CUSTOM
         data[1] = 0x0
         data[2] = 0x0
@@ -160,12 +161,17 @@ class LEDMATRIX:
         data[4] = frames_number;
         
         for i in range(frames_number - 1, -1, -1):
-            data = [I2C_CMD_DISP_CUSTOM, 0, 0, 0, frames_number, i] + [0] * 64
+            data[5] = i
             
             # Fill the frame data (reverse byte order for each 8x8 block if necessary)
+            """This version is for 64 bit integer buffer"""
             for j in range(8):
-                for k in range(8):
+                for k in range(7, -1, -1):
                     data[8 + j * 8 + (7 - k)] = buffer[j * 8 + k + i * 64]
+            
+#             """This version is for 8 bit integer buffer"""
+#             for j in range(64):
+#                     data[8 + j] = buffer[j + i * 64]
 
             # For the last frame, set the duration and forever_flag
             if i == 0:
@@ -178,12 +184,12 @@ class LEDMATRIX:
             time.sleep_ms(1)  # Small delay
 
             # Send next 24 bytes (from index 24 to 48)
-            self._i2c_send_bytes(self.current_device_address, data[24:48])
+            self._i2c_send_continue_bytes(self.current_device_address, data[24:48])
             time.sleep_ms(1)  # Small delay
 
             # Send last 24 bytes (from index 48 to 72)
-            self._i2c_send_bytes(self.current_device_address, data[48:72])
-            time.sleep_ms(1)  # Small delay
+            self._i2c_send_continue_bytes(self.current_device_address, data[48:72])
+           # Small delay
     '''
     def display_frames(self, buffer, duration_time, forever_flag, frames_number):
         if frames_number > 5:
