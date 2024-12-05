@@ -30,7 +30,7 @@ Pin 5
 # I2S Setup Function with Variable Rate
 def setup_i2s(sample_rate, bit_depth,BUFFER_SIZE = 1024):
     i2s = I2S(
-        0, 
+        0,
         sck=Pin(5),   # Serial Clock
         ws=Pin(4),    # Word Select / LR Clock
         sd=Pin(3),    # Serial Data
@@ -104,4 +104,5 @@ finally:
         os.umount("/sd")
     except:
         pass
+
 
