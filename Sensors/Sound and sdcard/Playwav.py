@@ -12,7 +12,19 @@ A1 - This is used for audio data, or DAT.
 A2 - This is used for wordselect clock, or LR.
 A3 - This is used for bitclock, or BCLK.
 '''
+'''
+Pin 2
+Pin 8
+Pin 9
+Pin 10
+Pin 3
+Pin 4
+Pin 5
+ 
 
+
+
+'''
 
 
 # I2S Setup Function with Variable Rate
@@ -56,6 +68,7 @@ def play_sound(path):
         # Open the .wav file from the SD card
     with open("/sd/"+ path, "rb") as wav_file:
         sample_rate, bit_depth = parse_wav_header(wav_file)
+        print(sample_rate, bit_depth)
         i2s = setup_i2s(sample_rate, bit_depth)
 
         # Skip the header and begin reading audio data
