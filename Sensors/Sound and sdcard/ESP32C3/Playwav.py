@@ -104,5 +104,3 @@ finally:
         os.umount("/sd")
     except:
         pass
-
-
