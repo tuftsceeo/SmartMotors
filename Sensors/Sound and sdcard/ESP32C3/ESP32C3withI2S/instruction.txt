@@ -1,7 +1,7 @@
 Open Terminal
-Type ls/dev/tty.* and hit enter
+Type ls /dev/tty.* and hit enter
 find the serial port for your esp32c3 - most likely /dev/tty.usbmodem101 or similar
-Now cd yourself into the firmware folder
+Now cd yourself into the firmware folder: "withI2S"
 and run the command below
 
 
