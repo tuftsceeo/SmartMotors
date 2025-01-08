@@ -19,6 +19,7 @@ number_of_pulses = 0x33
 motor_shaft_angle_error = 0x39
 move_mot = 0xF6
 
+
 def add_chksum(command):
     checksum = sum(command) & 0xFF
     command.append(checksum)
@@ -44,6 +45,8 @@ def send_motor_command(to_send):
     return(ret)
 
 def move_motor(direction, speed): #0 is CW and 1 is CCW, speed is 7 bit val (0 - 127)
+    if speed > 127:
+        speed =127
     command = (direction <<7 | speed) & 0xFF
     send_motor_command([move_mot , command])
 
@@ -68,6 +71,8 @@ def set_work_mode(mode):
     # 2 is CR_vFOC
     # 3 is UART
     send_motor_command([0x82, mode])
+def set_baudrate(baudrate):
+    send_motor_command([0x8A, baudrate])
     
 # set_microsteps(32)
 print(read_encoder_value())
