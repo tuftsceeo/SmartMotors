@@ -19,9 +19,9 @@ DIN (Data In) -D10
 def setup_i2s(sample_rate, bit_depth,BUFFER_SIZE = 1024):
     i2s = I2S(
         0,
-        sck=Pin(20),   # Serial Clock
-        ws=Pin(19),    # Word Select / LR Clock
-        sd=Pin(18),    # Serial Data
+        sck=Pin(20),   # Serial Clock BCLK D9
+        ws=Pin(18),    # Word Select / LR Clock D10
+        sd=Pin(19),    # Serial Data
         mode=I2S.TX,
         bits=bit_depth,
         format=I2S.MONO,
@@ -64,6 +64,7 @@ def play_sound(path):
 
 
 try:
+    print("playing")
     play_sound("hello.wav")
 
     time.sleep(5)
