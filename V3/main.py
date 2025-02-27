@@ -1,9 +1,8 @@
 
 from machine import Pin, SoftI2C, PWM, ADC
 from files import *
-#import time
-#
-#import machine
+import time
+import machine
 import prefs
 
 
@@ -12,11 +11,6 @@ import prefs
 switch_down = Pin(8, Pin.IN)
 switch_select = Pin(9, Pin.IN)
 switch_up= Pin(10, Pin.IN)
-
-
-
-
-  
 
 
 def setmode():
@@ -38,12 +32,11 @@ def setmode():
     return mode
         
 
-
-#display.welcomemessage()
+display.welcomemessage()
 
 
 #detect mode on start up
-    
+
 mode = setmode()
        
 
@@ -51,3 +44,4 @@ if mode == 0:
     import standalone
 else:
     import webconnect
+
