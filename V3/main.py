@@ -32,7 +32,6 @@ def setmode():
     return mode
         
 
-display.welcomemessage()
 
 
 #detect mode on start up
