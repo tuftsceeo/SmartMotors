@@ -38,7 +38,7 @@ points = []
 flags=[False,False,False,False, False]
 playFlag=False
 triggered=False
-LOGGING=True
+
 
 
 #switch flags
@@ -193,8 +193,7 @@ def check_switch(p):
 def displaybatt(p):
     batterycharge=sens.readbattery()
     display.showbattery(batterycharge)
-    if LOGGING:
-        savetolog(time.time(),screenID,highlightedIcon, point,points) 
+ 
     return batterycharge
 
 
@@ -240,29 +239,6 @@ def readdatapoints():
         return ([])
     
 
-def setloggingmode():
-    #sets pref to log by default
-    if not switch_down.value() and not switch_up.value() and not switch_select.value():
-        resetlog()  #delete all the previous logs
-        setprefs()  #sets preference file to True 
-        display.showmessage("LOG: ON")
-        print("resetting the log file")
-        
-
-    #resets prefs to not log by default
-    if not switch_down.value() and not switch_up.value() and switch_select.value():
-        resetprefs()  #resets preference file to False
-        print("turn OFF the logging")
-        display.showmessage("LOG: OFF")
-
-
-    if switch_down.value() and switch_up.value() and switch_select.value():
-        print("default: turn ON the logging")
-        
-        
-    import prefs
-    return prefs.log
-
 
 
 points=readdatapoints()
@@ -275,14 +251,6 @@ tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
 batt = Timer(2)
 batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
 
-
-display.welcomemessage()
-
-
-
-    
-    
-LOGGING=setloggingmode()
        
 #setup with homescreen  #starts with screenID=0
 display.selector(screenID,highlightedIcon[screenID][0],-1)
@@ -290,14 +258,8 @@ oldpoint=[-1,-1]
 
     
 while True:
-    #log       
+     
     point = sens.readpoint()
-    if(triggered):
-        if LOGGING:
-            savetolog(time.time(),screenID,highlightedIcon, point,points)
-        triggered=False
-    
-
     #broadcast(point, screenID, highlightedIcon[screenID][0],ID)
     
     #Homepage
@@ -352,22 +314,7 @@ while True:
             resetflags()    
 
         
-        elif(flags[3]):  # change this to settings icon save button is pressed
-            # This is where we can put other advanced settings, maybe call the main screen
-            #screenId=0
-            #savetofile(points)
-            #resettohome()
-            
-            print("some settings stuff")
-            resetflags()
-            
-        elif(flags[4]): # help button is prssed
-            # quit to home
-            display.showmessage("This is for help whatever you need")
-         #  resettohome()
-            resetflags()
 
-        
         if(playFlag): #only when point is different now
             if(not point==oldpoint): #only when point is different now
                 point = nearestNeighbor(points,point)
@@ -381,57 +328,7 @@ while True:
                 s.write_angle(point[1])
                 display.graph(oldpoint, point, points,0) #normal color
                 
-
-                    
-    
-    # Load saved files screen
-    #[fb_next,fb_delete,fb_home,fb_toggle]
-    elif(screenID==2):
-        datapoints=readfile()        
-        if(datapoints):
-            numberofdata=len(datapoints)
-            points=datapoints[filenumber]
-            
-            if(flags[0]):
-                filenumber=((filenumber+1)%numberofdata)
-                points=datapoints[filenumber]
-                display.cleargraph()
-                resetflags()
-                
-            elif(flags[1]):
-                del datapoints[filenumber]
-                replacefile(datapoints)
-                filenumber=0
-                display.cleargraph()
-                resetflags()
-                
-            elif(flags[2]):
-                resettohome()
-                resetflags()
-                
-            if(not point==oldpoint): #only when point is different now
-                point = nearestNeighbor(points,point)
-                s.write_angle(point[1])
-                display.graph(oldpoint, point, points,0) #normal color
-        else:
-            display.showmessage("No files to show")
-            resettohome()
                
-    # Settings Screen
-    #[fb_Lead,fb_Follow, fb_BIGHome]
-    elif(screenID==4):
-        if(flags[0]):
-            display.showmessage(ID)
-            waitforconnection()
-            resetflags()
-            
-        elif(flags[1]):
-            print("I shall follow you")
-            resetflags()
-            
-        elif(flags[2]):
-            resettohome()
-            resetflags()
                     
     oldpoint=point
     if clearscreen:
