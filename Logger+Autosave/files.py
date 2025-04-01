@@ -64,9 +64,12 @@ def resetlog():
     except:
         print("no log file to remove")
     
-def resetprefs():
+def resetprefs(mode):
     f=open("prefs.py","w")
-    f.write("log=False\r\n")
+    if(mode ==0):
+        f.write("mode=0\r\n")
+    else:
+        f.write("mode=1\r\n")
     f.close()
     
 

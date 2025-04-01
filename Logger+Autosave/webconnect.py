@@ -2,6 +2,8 @@
     Updated 07/14/2023 for July Workshop
     Uses serial for cummincation
     Includes changing I2C display when disconnected
+    
+    PLAY MODE WHEN DISCONNECTED
 
 """
 
@@ -11,7 +13,7 @@ import time
 import servo
 import json
 import ssd1306
-from machine import Pin, SoftI2C, PWM, ADC
+from machine import Pin, SoftI2C, PWM, ADC, Timer
 
 serialPoll = uselect.poll()
 serialPoll.register(sys.stdin, uselect.POLLIN)
@@ -37,6 +39,15 @@ datafilename = "trainData.txt"
 STATE = 0
 NN_index = 0
 global_TEST_motor = 0
+
+switch_state_select = False
+last_switch_state_select = False
+switched_select = False
+
+# select switch
+switch_select = Pin(9, Pin.IN)
+
+run_manual = False 
 
 def readSensor():
     l=[]
@@ -141,19 +152,20 @@ def runData():
     sens = int((100 * int(sens))/4095)
     light_val = []
     motor_val = []
-    for (mot, light) in training_data:
-        dist = abs(sens - light)
-        light_val.append(dist)
-        motor_val.append(mot)
-    # get the index of the least light_val
-    global NN_index
-    NN_index = light_val.index(min(light_val))
-    pos = motor_val[NN_index]
-    global global_TEST_motor
-    global_TEST_motor = pos
-    
-    global motor
-    motor.write_angle(180-pos)
+    if(len(training_data) > 0):
+        for (mot, light) in training_data:
+            dist = abs(sens - light)
+            light_val.append(dist)
+            motor_val.append(mot)
+        # get the index of the least light_val
+        global NN_index
+        NN_index = light_val.index(min(light_val))
+        pos = motor_val[NN_index]
+        global global_TEST_motor
+        global_TEST_motor = pos
+        
+        global motor
+        motor.write_angle(180-pos)
 
 def play(json_obj):
     """
@@ -177,7 +189,7 @@ def play(json_obj):
         runData()
         dict_obj["m"] = global_TEST_motor
         dict_obj["i"] = NN_index
-    
+        
     string = json.dumps(dict_obj)
     sys.stdout.write(string+"\n")
 
@@ -241,12 +253,49 @@ append = False
 starttime = time.time()
 timer_begin = False
 
-while True:
-    # continuously read commands over serial and handles them
-    try:
-        message = readSerial()
-    
+def selectpressed():
+    #declare all global variables, include all flags
+    global run_manual
+    if(run_manual == False):
+        run_manual = True
+    else:
+        run_manual = False
 
+def selectNotpressed():
+    if(run_manual == True):
+        display.fill(0)
+        display.text("NOT clicked", 25,35,1)
+        display.show()
+
+def check_switch(p):
+    global switch_state_select
+    global switched_select
+    global last_switch_state_select
+
+    switch_state_select = switch_select.value()
+         
+    if switch_state_select != last_switch_state_select:
+        switched_select = True
+        
+    if switched_select:
+        if switch_state_select == 0:
+            selectpressed()
+        switched_select = False
+        #time.sleep(0.1)
+    
+    #if(switched_select == False):
+    #    selectNotpressed()
+        
+    last_switch_state_select = switch_state_select
+
+#setting up Timers
+tim = Timer(0)
+tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
+
+while True:
+    if(run_manual == False):
+        # continuously read commands over serial and handles them
+        message = readSerial()
         # start of json dict
         if(message == '{'):
             append = True 
@@ -261,7 +310,7 @@ while True:
         if(append):
             if(type(message) is str):
                 final_string += message
-        
+                
         if(message == None and timer_begin == False):
             starttime = time.time()
             timer_begin = True
@@ -278,5 +327,10 @@ while True:
             display.text("Not", 30,35,1)
             display.text("Connected", 30,55,1)
             display.show()
-    except:
-        pass
+    else:
+        display.fill(0)
+        display.text("PLAY MODE",30,35,1)
+        display.show()
+        if(len(training_data) == 0):
+            onload()
+        runData()

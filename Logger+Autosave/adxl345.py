@@ -1,4 +1,3 @@
-#https://github.com/DFRobot/micropython-dflib/blob/master/ADXL345/user_lib/ADXL345.py
 from machine import Pin,I2C
 import math
 import time
