@@ -255,7 +255,7 @@ batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
 #setup with homescreen  #starts with screenID=0
 display.selector(screenID,highlightedIcon[screenID][0],-1)
 oldpoint=[-1,-1]
-
+display.welcomemessage()
     
 while True:
      
