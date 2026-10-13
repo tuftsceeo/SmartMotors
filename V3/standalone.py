@@ -248,7 +248,7 @@ if points==[]:
 #setting up Timers
 tim = Timer(0)
 tim.init(period=50, mode=Timer.PERIODIC, callback=check_switch)
-batt = Timer(2)
+batt = Timer(1)  # ESP32-C3 only has hardware timers 0 and 1
 batt.init(period=3000, mode=Timer.PERIODIC, callback=displaybatt)
 
 display.welcomemessage()       
